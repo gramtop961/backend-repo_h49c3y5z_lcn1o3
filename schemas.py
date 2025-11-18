@@ -1,48 +1,38 @@
 """
-Database Schemas
+Database Schemas for AI RFP App
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model represents a collection in MongoDB.
+Collection name is the lowercase of the class name.
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
-# Example schemas (replace with your own):
-
-class User(BaseModel):
+class Rfp(BaseModel):
     """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
+    RFP collection schema
+    Collection name: "rfp"
     """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    title: str = Field(..., description="RFP title")
+    description: Optional[str] = Field(None, description="Short description of the RFP")
+    status: str = Field("draft", description="draft | published | archived")
 
-class Product(BaseModel):
+class Rfpsection(BaseModel):
     """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
+    RFP Section collection schema
+    Collection name: "rfpsection"
     """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+    rfp_id: str = Field(..., description="Reference to RFP _id as string")
+    heading: str = Field(..., description="Section heading/title")
+    content: str = Field("", description="Rich text/markdown content for the section")
+    order: int = Field(0, description="Display order within the RFP")
 
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Aigeneration(BaseModel):
+    """
+    History of AI generations (optional, for auditing)
+    Collection name: "aigeneration"
+    """
+    rfp_id: str = Field(..., description="RFP id")
+    section_id: Optional[str] = Field(None, description="Section id if applicable")
+    prompt: str = Field(..., description="Prompt used for generation")
+    output: str = Field(..., description="Generated text")
